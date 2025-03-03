@@ -1,13 +1,14 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "pozys/smart-link",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": [
-        "laravel",
-        "framework"
-    ],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Культяпов Константин",
+            "email": "pozys@mail.ru"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
