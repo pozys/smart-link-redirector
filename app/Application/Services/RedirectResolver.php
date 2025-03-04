@@ -21,7 +21,7 @@ class RedirectResolver implements RedirectResolverInterface
 
         return collect($redirects)
             ->first(
-                fn(RedirectLinkInterface $candidate): bool => $candidate->getRules()
+                fn(RedirectLinkInterface $candidate): bool => collect($candidate->getRules())
                     ->every(fn(Rule $rule): bool => $this->ruleChecker->isApplicable($rule))
             );
     }
