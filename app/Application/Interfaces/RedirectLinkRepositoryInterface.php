@@ -10,7 +10,7 @@ use App\Domain\Interfaces\LinkInterface;
 interface RedirectLinkRepositoryInterface
 {
     /**
-     * @return RedirectLinkInterface[]
+     * @return array<RedirectLinkInterface>
      */
     public function findRedirects(LinkInterface $link): array;
 

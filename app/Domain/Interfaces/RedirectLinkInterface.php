@@ -11,7 +11,7 @@ interface RedirectLinkInterface
     public function getLink(): string;
 
     /**
-     * @return Collection<CanProvideExaminedValue>
+     * @return array<CanProvideExaminedValue>
      */
-    public function getRules(): Collection;
+    public function getRules(): array;
 }

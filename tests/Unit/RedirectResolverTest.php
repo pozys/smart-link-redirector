@@ -72,7 +72,7 @@ final class RedirectResolverTest extends TestCase
         $rule2 = $this->createStub(Rule::class);
         $redirectLink = $this->createStub(RedirectLinkInterface::class);
         $redirectLink->method('getLink')->willReturn('https://example.com');
-        $redirectLink->method('getRules')->willReturn(collect([$rule1, $rule2]));
+        $redirectLink->method('getRules')->willReturn([$rule1, $rule2]);
 
         return $redirectLink;
     }
