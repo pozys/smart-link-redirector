@@ -40,19 +40,19 @@ final class EqualConditionTest extends TestCase
     }
 
     #[DataProvider('rightData')]
-    public function testIsSatisfied(ValueWrapperInterface $actual, string $expected): void
+    public function testIsSatisfied(ValueWrapperInterface $actual, string $expect): void
     {
-        $equalCondition = app('EqualCondition.isSatisfiedBy', [$this->wrapIntoRuleInerface($expected)]);
+        $condition = app('EqualCondition.isSatisfiedBy', [$this->wrapIntoRuleInerface($expect)]);
 
-        $this->assertTrue($equalCondition($actual));
+        $this->assertTrue($condition($actual));
     }
 
     #[DataProvider('wrongData')]
-    public function testIsNotSatisfied(ValueWrapperInterface $actual, string $expected): void
+    public function testIsNotSatisfied(ValueWrapperInterface $actual, string $expect): void
     {
-        $equalCondition = app('EqualCondition.isSatisfiedBy', [$this->wrapIntoRuleInerface($expected)]);
+        $condition = app('EqualCondition.isSatisfiedBy', [$this->wrapIntoRuleInerface($expect)]);
 
-        $this->assertFalse($equalCondition($actual));
+        $this->assertFalse($condition($actual));
     }
 
     private function wrapIntoRuleInerface(mixed $value): RuleInterface
