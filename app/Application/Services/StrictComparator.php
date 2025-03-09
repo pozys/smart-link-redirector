@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Application\Services;
 
-use App\Application\Interfaces\ComparatorInterface;
-use App\Domain\Interfaces\{ConditionValueInterface, HasConditionsInterface, ValueWrapperInterface};
+use App\Application\Interfaces\{RuleCheckerInterface, ComparatorInterface};
+use App\Domain\Models\Rules\Rule;
 
 class StrictComparator implements ComparatorInterface
 {
-    public function matches(HasConditionsInterface $candidate, ValueWrapperInterface $valueWrapper): bool
+    public function __construct(private readonly RuleCheckerInterface $ruleChecker) {}
+
+    public function isApplicable(Rule ...$rules): bool
     {
-        return $candidate->getConditions()->every(
-            fn(ConditionValueInterface $condition): bool => $condition->isSatisfiedBy($valueWrapper)
-        );
+        return collect($rules)->every(fn(Rule $rule): bool => $this->ruleChecker->satisfies($rule));
     }
 }

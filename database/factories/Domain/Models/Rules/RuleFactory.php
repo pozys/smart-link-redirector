@@ -2,7 +2,7 @@
 
 namespace Database\Factories\Domain\Models\Rules;
 
-use App\Domain\Models\Rules\{LanguageRule, Rule};
+use App\Domain\Models\Rules\Rule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RuleFactory extends Factory
@@ -12,7 +12,7 @@ class RuleFactory extends Factory
     public function definition(): array
     {
         return [
-            'rule_type' => app(LanguageRule::class),
+            'rule_type' => 'LanguageRule',
         ];
     }
 }
