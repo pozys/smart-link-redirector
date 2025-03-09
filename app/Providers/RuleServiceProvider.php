@@ -4,9 +4,17 @@ namespace App\Providers;
 
 use App\Application\Adapters\RuleInterfaceAdapter;
 use App\Domain\Interfaces\ValueWrapperInterface;
-use App\Domain\Models\Conditions\EqualCondition;
+use App\Domain\Models\Conditions\{
+    AndCondition,
+    EqualCondition,
+    GtCondition,
+    GteCondition,
+    LtCondition,
+    LteCondition,
+    OrCondition
+};
 use App\Domain\Models\Rules\Rule;
-use App\Domain\Models\ValueWrappers\{StringValueWrapper};
+use App\Domain\Models\ValueWrappers\StringValueWrapper;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -72,6 +80,52 @@ class RuleServiceProvider extends ServiceProvider
                 ValueWrapperInterface $valueWrapper
             ): bool => $app->make(EqualCondition::class)
                 ->isValid($valueWrapper->getValue(), $valueWrapper->cast($args[0]->value()))
+        );
+
+        $this->app->bind(
+            'GteCondition.isSatisfiedBy',
+            fn(Application $app, array $args) => static fn(
+                ValueWrapperInterface $valueWrapper
+            ): bool => $app->make(GteCondition::class)
+                ->isValid($valueWrapper->getValue(), $valueWrapper->cast($args[0]->value()))
+        );
+
+        $this->app->bind(
+            'GtCondition.isSatisfiedBy',
+            fn(Application $app, array $args) => static fn(
+                ValueWrapperInterface $valueWrapper
+            ): bool => $app->make(GtCondition::class)
+                ->isValid($valueWrapper->getValue(), $valueWrapper->cast($args[0]->value()))
+        );
+
+        $this->app->bind(
+            'LteCondition.isSatisfiedBy',
+            fn(Application $app, array $args) => static fn(
+                ValueWrapperInterface $valueWrapper
+            ): bool => $app->make(LteCondition::class)
+                ->isValid($valueWrapper->getValue(), $valueWrapper->cast($args[0]->value()))
+        );
+
+        $this->app->bind(
+            'LtCondition.isSatisfiedBy',
+            fn(Application $app, array $args) => static fn(
+                ValueWrapperInterface $valueWrapper
+            ): bool => $app->make(LtCondition::class)
+                ->isValid($valueWrapper->getValue(), $valueWrapper->cast($args[0]->value()))
+        );
+
+        $this->app->bind(
+            'AndCondition.isSatisfiedBy',
+            fn(Application $app, array $args) => static fn(
+                ValueWrapperInterface $valueWrapper
+            ): bool => $app->make(AndCondition::class)->isValid($valueWrapper, ...$args)
+        );
+
+        $this->app->bind(
+            'OrCondition.isSatisfiedBy',
+            fn(Application $app, array $args) => static fn(
+                ValueWrapperInterface $valueWrapper
+            ): bool => $app->make(OrCondition::class)->isValid($valueWrapper, ...$args)
         );
     }
 
