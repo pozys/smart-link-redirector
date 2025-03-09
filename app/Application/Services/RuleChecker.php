@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace App\Application\Services;
 
-use App\Application\Adapters\{CanProvideExaminedValueAdapter, HasConditionsInterfaceAdapter};
-use App\Application\Interfaces\{ComparatorInterface, RuleCheckerInterface};
+use App\Application\Adapters\{CanProvideExaminedValueAdapter, RuleInterfaceAdapter};
+use App\Application\Interfaces\RuleCheckerInterface;
 use App\Domain\Models\Rules\Rule;
 
 class RuleChecker implements RuleCheckerInterface
 {
-    public function __construct(private readonly ComparatorInterface $comparator) {}
-
-    public function isApplicable(Rule $rule): bool
+    public function satisfies(Rule $rule): bool
     {
-        return $this->comparator->matches(
-            app()->make(HasConditionsInterfaceAdapter::class, ['adaptee' => $rule]),
-            app()->make(CanProvideExaminedValueAdapter::class, ['rule' => $rule])->getCurrentValue(),
-        );
+        return app(RuleInterfaceAdapter::class, ['adaptee' => $rule])
+            ->isSatisfiedBy(app(CanProvideExaminedValueAdapter::class, ['adaptee' => $rule])->getCurrentValue());
     }
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Interfaces;
 
-use App\Domain\Interfaces\{HasConditionsInterface, ValueWrapperInterface};
+use App\Domain\Models\Rules\Rule;
 
 interface ComparatorInterface
 {
-    public function matches(HasConditionsInterface $candidate, ValueWrapperInterface $valueWrapper): bool;
+    public function isApplicable(Rule ...$rules): bool;
 }
