@@ -8,5 +8,5 @@ interface ValueWrapperInterface
 {
     public function getValue(): mixed;
 
-    public function cast(mixed $value): mixed;
+    public function cast(string $value): mixed;
 }

@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Application\Interfaces\RuleCheckerInterface;
-use App\Domain\Models\Conditions\{Condition, EqualCondition};
 use App\Domain\Models\{ConditionValue, Link, RedirectLink};
 use App\Domain\Models\Rules\Rule;
 use Tests\TestCase;
 
 final class LanguageRuleTest extends TestCase
 {
-    private RuleCheckerInterface $ruleChecker;
+    private readonly RuleCheckerInterface $ruleChecker;
 
     protected function setUp(): void
     {
@@ -29,7 +28,7 @@ final class LanguageRuleTest extends TestCase
 
         $_SERVER['HTTP_ACCEPT_LANGUAGE'] = $expectedLanguage;
 
-        $this->assertTrue($this->ruleChecker->isApplicable($rule));
+        $this->assertTrue($this->ruleChecker->satisfies($rule));
     }
 
     public function testRuleDoesNotMatch(): void
@@ -38,26 +37,28 @@ final class LanguageRuleTest extends TestCase
 
         $_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'ru';
 
-        $this->assertFalse($this->ruleChecker->isApplicable($rule));
+        $this->assertFalse($this->ruleChecker->satisfies($rule));
     }
 
     public function testRuleDoesNotMatchWithoutAcceptLanguageHeader(): void
     {
         $rule = $this->makeRule('en');
 
-        $this->assertFalse($this->ruleChecker->isApplicable($rule));
+        $this->assertFalse($this->ruleChecker->satisfies($rule));
     }
 
     private function makeRule(string $language): Rule
     {
+        $link = Link::factory()->create();
+        $redirectLink = RedirectLink::factory()->for($link)->create();
+
         return Rule::factory()
+            ->for($redirectLink)
             ->has(
-                Condition::factory()->state(['condition_type' => app(EqualCondition::class)])
-                    ->has(ConditionValue::factory()->state(['value' => $language])),
+                Rule::factory()->state(['rule_type' => 'EqualCondition'])
+                    ->has(ConditionValue::factory()->state(['value' => $language]), 'value'),
                 'conditions'
             )
-            ->for(RedirectLink::factory()
-                ->for(Link::factory()))
             ->create();
     }
 }

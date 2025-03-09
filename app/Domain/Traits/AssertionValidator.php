@@ -8,7 +8,7 @@ use Closure;
 
 trait AssertionValidator
 {
-    private function assertIsValid(Closure $assertion, mixed ...$values): bool
+    public function assertIsValid(Closure $assertion, mixed ...$values): bool
     {
         try {
             call_user_func($assertion, ...$values);

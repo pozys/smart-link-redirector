@@ -8,5 +8,5 @@ use App\Domain\Models\Rules\Rule;
 
 interface RuleCheckerInterface
 {
-    public function isApplicable(Rule $rule): bool;
+    public function satisfies(Rule $rule): bool;
 }
