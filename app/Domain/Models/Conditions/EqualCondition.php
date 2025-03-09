@@ -4,19 +4,16 @@ declare(strict_types=1);
 
 namespace App\Domain\Models\Conditions;
 
-use App\Domain\Traits\AssertionValidator;
 use Webmozart\Assert\Assert;
 
-final class EqualCondition
+final class EqualCondition extends AbstractCondition
 {
-    use AssertionValidator;
-
-    public function isValid(mixed $value, mixed $expected): bool
+    public function isValid(mixed $value, mixed $expect): bool
     {
         return $this->assertIsValid(
-            fn(mixed $value, mixed $expected) => Assert::eq($value, $expected),
+            fn(mixed $value, mixed $expect) => Assert::eq($value, $expect),
             $value,
-            $expected
+            $expect
         );
     }
 }
