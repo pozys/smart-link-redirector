@@ -1,4 +1,4 @@
-# Smart Links
+# Smart Links Redirector
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/b7d2e37e49840a9c7cdf/maintainability)](https://codeclimate.com/github/pozys/smart-link-redirector/maintainability)
 
