@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'auth_service' => [
+            'driver' => 'auth_service',
+            'provider' => 'users',
+        ],
     ],
 
     /*
@@ -60,10 +64,10 @@ return [
     */
 
     'providers' => [
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'users' => [
+            'driver' => 'eloquent',
+            // 'table' => 'users',
+        ],
     ],
 
     /*
