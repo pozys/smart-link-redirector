@@ -39,6 +39,15 @@ final class RedirectTest extends TestCase
 
         $this->app->instance(RedirectResolverInterface::class, $redirectResolver);
 
-        $this->actingAs(UserFactory::make())->get(route(self::ROUTE, ['link' => $linkUuid]))->assertRedirect();
+        $this->actingAs(UserFactory::make())
+            ->get(route(self::ROUTE, ['link' => $linkUuid]))
+            ->assertRedirect();
+    }
+
+    public function testNotFound(): void
+    {
+        $this->actingAs(UserFactory::make())
+            ->get(route(self::ROUTE, ['link' => $this->faker->uuid()]))
+            ->assertNotFound();
     }
 }
