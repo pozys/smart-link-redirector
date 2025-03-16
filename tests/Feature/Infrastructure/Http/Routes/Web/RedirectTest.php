@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\App\Infrastructure\Http\Routes\Web;
+namespace Tests\Feature\Infrastructure\Http\Routes\Web;
 
 use App\Application\Interfaces\RedirectResolverInterface;
 use App\Domain\Interfaces\{LinkInterface, RedirectLinkInterface};

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Interfaces;
 
-use App\Domain\Models\Rules\Rule;
+use App\Domain\DTO\RuleDto;
 
 interface RuleCheckerInterface
 {
-    public function satisfies(Rule $rule): bool;
+    public function satisfies(RuleDto $rule): bool;
 }

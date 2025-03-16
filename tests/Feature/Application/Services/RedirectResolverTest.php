@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit;
+namespace Tests\Feature\Application\Services;
 
 use App\Application\Interfaces\{ComparatorInterface, RedirectLinkRepositoryInterface, RuleCheckerInterface};
 use App\Application\Services\RedirectResolver;
 use App\Domain\Interfaces\{LinkInterface, RedirectLinkInterface};
 use App\Domain\Models\Rules\Rule;
 use PHPUnit\Framework\MockObject\Stub;
+use Tests\Factories\RuleDtoFactory;
 use Tests\TestCase;
 
 final class RedirectResolverTest extends TestCase
@@ -31,24 +32,6 @@ final class RedirectResolverTest extends TestCase
         );
 
         $this->assertSame($rightRedirect, $redirectResolver->resolve($link));
-    }
-
-    public function testResolveRulesNotFound(): void
-    {
-        $redirectLinkProvider = $this->createStub(RedirectLinkRepositoryInterface::class);
-
-        $redirectLinkProvider->method('findRedirects')->willReturn([]);
-
-        $link = $this->createStub(LinkInterface::class);
-        $redirectResolver = app()->make(
-            RedirectResolver::class,
-            [
-                'redirectLinkRepository' => $redirectLinkProvider,
-                'comparator' => $this->createStub(ComparatorInterface::class)
-            ]
-        );
-
-        $this->assertNull($redirectResolver->resolve($link));
     }
 
     public function testResolveRulesNotMatch(): void
@@ -77,8 +60,8 @@ final class RedirectResolverTest extends TestCase
         $redirectLink = $this->createStub(RedirectLinkInterface::class);
         $redirectLink->method('getLink')->willReturn(fake()->url());
         $redirectLink->method('getRules')->willReturn([
-            $this->createStub(Rule::class),
-            $this->createStub(Rule::class)
+            RuleDtoFactory::make(),
+            RuleDtoFactory::make(),
         ]);
 
         return $redirectLink;

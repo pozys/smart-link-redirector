@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Application\Services;
 
-use App\Application\Adapters\{CanProvideExaminedValueAdapter, RuleInterfaceAdapter};
 use App\Application\Interfaces\RuleCheckerInterface;
-use App\Domain\Models\Rules\Rule;
+use App\Domain\DTO\RuleDto;
 
 class RuleChecker implements RuleCheckerInterface
 {
-    public function satisfies(Rule $rule): bool
+    public function satisfies(RuleDto $ruleDto): bool
     {
-        return app(RuleInterfaceAdapter::class, ['adaptee' => $rule])
-            ->isSatisfiedBy(app(CanProvideExaminedValueAdapter::class, ['adaptee' => $rule])->getCurrentValue());
+        return $ruleDto->rule->isSatisfiedBy($ruleDto->valueProvider->getCurrentValue());
     }
 }
