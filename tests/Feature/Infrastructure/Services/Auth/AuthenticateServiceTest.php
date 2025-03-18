@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\App\Infrastructure\Services\Auth;
+namespace Tests\Feature\Infrastructure\Services\Auth;
 
 use Illuminate\Http\Client\{Factory, Request};
 use Illuminate\Support\Facades\Http;
