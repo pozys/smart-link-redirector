@@ -6,20 +6,12 @@ namespace Tests\Feature\Rules;
 
 use App\Domain\Models\{ConditionValue, Link, RedirectLink};
 use App\Domain\Models\Rules\Rule;
-use App\Infrastructure\Http\Middleware\AuthenticateService;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Tests\Factories\UserFactory;
 use Tests\TestCase;
 
 final class TimeIntervalRuleTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->withoutMiddleware(AuthenticateService::class);
-    }
-
     public function testRuleSuccess(): void
     {
         $gt = now()->addDays(-1);

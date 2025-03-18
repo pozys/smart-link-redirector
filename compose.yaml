@@ -1,0 +1,56 @@
+services:
+  application:
+    container_name: smart-link-redirector-app
+    build:
+      context: .
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    ports:
+      - 5173:5173
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      - database
+    networks:
+      - common_network
+
+  webserver:
+    image: nginx
+    container_name: smart-link-redirector-webserver
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - .:/app
+      - ./external/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - application
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost:80/up || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - common_network
+
+  database:
+    image: postgres
+    container_name: smart-link-redirector-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    volumes:
+      - smart_link_redirector_pgdata:/var/lib/postgresql/data
+    networks:
+      - common_network
+
+volumes:
+  smart_link_redirector_pgdata:
+
+networks:
+  common_network:
+    external: true
