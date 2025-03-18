@@ -7,7 +7,6 @@ namespace Tests\Feature\Infrastructure\Http\Routes\Web;
 use App\Application\Interfaces\RedirectResolverInterface;
 use App\Domain\Interfaces\{LinkInterface, RedirectLinkInterface};
 use App\Domain\Models\Link;
-use App\Infrastructure\Http\Middleware\AuthenticateService;
 use Mockery;
 use Tests\Factories\UserFactory;
 use Tests\TestCase;
@@ -15,13 +14,6 @@ use Tests\TestCase;
 final class RedirectTest extends TestCase
 {
     private const ROUTE = 'redirect';
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->withoutMiddleware(AuthenticateService::class);
-    }
 
     public function testRedirectSuccess(): void
     {

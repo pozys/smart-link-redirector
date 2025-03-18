@@ -6,19 +6,11 @@ namespace Tests\Feature\Rules;
 
 use App\Domain\Models\{ConditionValue, Link, RedirectLink};
 use App\Domain\Models\Rules\Rule;
-use App\Infrastructure\Http\Middleware\AuthenticateService;
 use Tests\Factories\UserFactory;
 use Tests\TestCase;
 
 final class LanguageRuleTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->withoutMiddleware(AuthenticateService::class);
-    }
-
     public function testRuleSuccess(): void
     {
         $expected = 'en';
