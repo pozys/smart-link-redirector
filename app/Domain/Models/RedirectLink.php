@@ -9,17 +9,12 @@ use App\Domain\Interfaces\{ConditionInterface, RedirectLinkInterface};
 use App\Domain\Models\Rules\Rule;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RedirectLink extends Model implements RedirectLinkInterface
 {
     use HasFactory, SoftDeletes;
-
-    public function link(): BelongsTo
-    {
-        return $this->belongsTo(Link::class);
-    }
 
     public function rules(): MorphMany
     {
