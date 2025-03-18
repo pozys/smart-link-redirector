@@ -44,10 +44,17 @@ final class RedirectTest extends TestCase
             ->assertRedirect();
     }
 
-    public function testNotFound(): void
+    public function testLinkNotFound(): void
     {
         $this->actingAs(UserFactory::make())
             ->get(route(self::ROUTE, ['link' => $this->faker->uuid()]))
+            ->assertNotFound();
+    }
+
+    public function testRedirectNotFound(): void
+    {
+        $this->actingAs(UserFactory::make())
+            ->get(route(self::ROUTE, ['link' => Link::factory()->create()->id]))
             ->assertNotFound();
     }
 }
