@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Infrastructure\Services\Auth;
 
+use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\Client\{Factory, Request};
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;

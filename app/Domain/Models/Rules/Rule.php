@@ -36,9 +36,4 @@ class Rule extends Model
     {
         return $this->morphMany(Rule::class, 'owned');
     }
-
-    public function owned(): MorphTo
-    {
-        return $this->morphTo();
-    }
 }
