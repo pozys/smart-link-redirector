@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Application\Adapters\{CanProvideValueAdapter, HasConditionsInterfaceAdapter};
+use App\Application\Services\ConditionInterfaceBridge;
 use App\Domain\Models\Conditions\{
     AndCondition,
     EqualCondition,
@@ -40,7 +41,10 @@ class RuleServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             'ConditionInterface.isSatisfied',
-            fn(Application $app, $args) => static fn(): bool => $app->make($args[0]->rule_type . '.isSatisfied', $args)()
+            fn(
+                Application $app,
+                $args
+            ) => static fn(): bool => $app->make(ConditionInterfaceBridge::class, ['object' => $args[0], 'args' => $args])->isSatisfied()
         );
     }
 
