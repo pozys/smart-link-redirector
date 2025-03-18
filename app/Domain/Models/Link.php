@@ -19,9 +19,4 @@ final class Link extends Model implements LinkInterface
     {
         return $this->hasMany(RedirectLink::class);
     }
-
-    public function getLink(): string
-    {
-        return $this->url;
-    }
 }
