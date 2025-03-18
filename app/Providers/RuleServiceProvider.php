@@ -30,18 +30,10 @@ class RuleServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->bindRuleInterfaces();
         $this->bindConditionInterface();
         $this->bindLanguageRule();
         $this->bindTimeIntervalRule();
         $this->bindConditions();
-    }
-
-    private function bindRuleInterfaces(): void
-    {
-        $this->app->bind('RuleInterface.ruleType', static fn(Application $app, array $args): string => $args[0]->rule_type);
-        $this->app->bind('RuleInterface.value', static fn(Application $app, array $args): mixed => $args[0]->value->value);
-        $this->app->bind('RuleInterface.conditions', static fn(Application $app, array $args): array => $args[0]->conditions->all());
     }
 
     private function bindConditionInterface(): void
