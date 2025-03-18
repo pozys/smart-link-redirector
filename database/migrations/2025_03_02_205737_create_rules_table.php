@@ -14,20 +14,13 @@ return new class extends Migration
         Schema::create(self::TABLE_NAME, function (Blueprint $table) {
             $table->id();
             $table->text('rule_type');
-            $table->foreignId('owner_id')
-                ->nullable()
-                ->constrained(self::TABLE_NAME)
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
-            $table->foreignIdFor(RedirectLink::class)
-                ->nullable()
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
+            $table->morphs('owned');
+            // $table->foreignIdFor(RedirectLink::class)
+            //     ->nullable()
+            //     ->onUpdate('cascade')
+            //     ->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
-
-            $table->index('owner_id');
-            $table->index('redirect_link_id');
         });
     }
 

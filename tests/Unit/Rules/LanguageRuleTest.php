@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Rules;
 
 use Tests\TestCase;
-use Illuminate\Contracts\Foundation\Application;
-use App\Providers\RuleServiceProvider;
-use App\Domain\Models\Rules\Rule;
-use App\Domain\Models\Conditions\EqualCondition;
-use App\Domain\Models\ValueWrappers\StringValueWrapper;
 use Closure;
+use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class LanguageRuleTest extends TestCase
@@ -25,19 +21,14 @@ class LanguageRuleTest extends TestCase
         ];
     }
 
-
-    // public function testRuleDoesNotMatchWithoutAcceptLanguageHeader(): void
-    // {
-    //     $rule = $this->makeRule('en');
-
-    //     $this->assertFalse($this->ruleChecker->satisfies($rule));
-    // }
-
     #[DataProvider('emptyData')]
-    public function testShouldHandleEmptyHttpAcceptLanguageServerVariable(Closure $varSetter): void
+    public function testShouldThrowExceptionWhenLanguageIsNotSet(Closure $varSetter): void
     {
         $varSetter();
 
-        $this->assertEmpty($this->app->make('LanguageRule.getValue'));
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('HTTP_ACCEPT_LANGUAGE is not set');
+
+        app('LanguageRule.isSatisfied', [$this->createStub(Model::class)])();
     }
 }

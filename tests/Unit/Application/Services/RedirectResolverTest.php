@@ -4,82 +4,69 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Application\Services;
 
-use App\Application\Interfaces\{ComparatorInterface, RedirectLinkRepositoryInterface, RuleCheckerInterface};
+use App\Application\Interfaces\{ComparatorInterface, RedirectLinkRepositoryInterface};
 use App\Application\Services\RedirectResolver;
-use App\Domain\Interfaces\{LinkInterface, RedirectLinkInterface};
-use App\Domain\Models\Rules\Rule;
+use App\Domain\Interfaces\{ConditionInterface, LinkInterface, RedirectLinkInterface};
 use PHPUnit\Framework\MockObject\Stub;
 use Tests\TestCase;
 
 final class RedirectResolverTest extends TestCase
 {
-    public function testResolveFirstApplicableRedirect(): void
+    public function testResolvePositive(): void
     {
         $redirectLinkProvider = $this->createStub(RedirectLinkRepositoryInterface::class);
 
-        $firstApplicableRedirect = $this->stubRedirect();
-        $secondRedirect = $this->stubRedirect();
+        $rightRedirect = $this->stubRedirect(true, true);
+        $wrongRedirect = $this->stubRedirect(true, false);
 
-        $comparator = $this->stubComparator(true, false);
-
-        $redirectLinkProvider->method('findRedirects')->willReturn([$firstApplicableRedirect, $secondRedirect]);
+        $redirectLinkProvider->method('findRedirects')->willReturn([$wrongRedirect, $rightRedirect]);
 
         $link = $this->createStub(LinkInterface::class);
         $redirectResolver = app()->make(
             RedirectResolver::class,
-            ['redirectLinkRepository' => $redirectLinkProvider, 'comparator' => $comparator]
+            ['redirectLinkRepository' => $redirectLinkProvider]
         );
 
-        $this->assertSame($firstApplicableRedirect, $redirectResolver->resolve($link));
+        $this->assertSame($rightRedirect, $redirectResolver->resolve($link));
     }
 
-    public function testResolveAllRedirectsNotApplicable(): void
+    public function testResolveRulesNotMatch(): void
     {
         $redirectLinkProvider = $this->createStub(RedirectLinkRepositoryInterface::class);
 
-        $redirectLink = $this->createStub(RedirectLinkInterface::class);
-        $redirectLink->method('getRules')->willReturn([]);
-
-        $comparator = $this->createStub(ComparatorInterface::class);
-
-        $redirectLinkProvider->method('findRedirects')->willReturn([$redirectLink]);
+        $redirectLinkProvider->method('findRedirects')->willReturn([
+            $this->stubRedirect(false, false),
+            $this->stubRedirect(false, false)
+        ]);
 
         $link = $this->createStub(LinkInterface::class);
         $redirectResolver = app()->make(
             RedirectResolver::class,
-            ['redirectLinkRepository' => $redirectLinkProvider, 'comparator' => $comparator]
+            [
+                'redirectLinkRepository' => $redirectLinkProvider,
+                'comparator' => $this->createStub(ComparatorInterface::class)
+            ]
         );
 
         $this->assertNull($redirectResolver->resolve($link));
     }
 
-    public function testResolveNoRedirectsFound(): void
-    {
-        $redirectLinkProvider = $this->createStub(RedirectLinkRepositoryInterface::class);
-        $redirectLinkProvider->method('findRedirects')->willReturn([]);
-
-        $link = $this->createStub(LinkInterface::class);
-        $redirectResolver = new RedirectResolver(
-            $redirectLinkProvider,
-            $this->createStub(ComparatorInterface::class)
-        );
-
-        $this->assertNull($redirectResolver->resolve($link));
-    }
-
-    private function stubRedirect(): Stub
+    private function stubRedirect(bool ...$results): Stub
     {
         $redirectLink = $this->createStub(RedirectLinkInterface::class);
-        $redirectLink->method('getLink')->willReturn($this->faker->url());
+        $redirectLink->method('getLink')->willReturn(fake()->url());
+        $redirectLink->method('getRules')->willReturn(
+            collect($results)->map(fn(bool $result): ConditionInterface => $this->stubCondition($result))->all()
+        );
 
         return $redirectLink;
     }
 
-    private function stubComparator(bool ...$results): ComparatorInterface
+    private function stubCondition(bool $isSatisfied = true): ConditionInterface
     {
-        $ruleChecker = $this->createStub(RuleCheckerInterface::class);
-        $ruleChecker->method('satisfies')->willReturn(...$results);
+        $condition = $this->createStub(ConditionInterface::class);
+        $condition->method('isSatisfied')->willReturn($isSatisfied);
 
-        return app(ComparatorInterface::class, compact('ruleChecker'));
+        return $condition;
     }
 }

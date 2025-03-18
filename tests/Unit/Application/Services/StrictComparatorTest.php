@@ -4,54 +4,44 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Application\Services;
 
-use App\Application\Interfaces\RuleCheckerInterface;
 use App\Application\Services\StrictComparator;
-use App\Domain\DTO\RuleDto;
-use App\Domain\Interfaces\{CanProvideExaminedValue, RuleInterface};
+use App\Domain\Interfaces\ConditionInterface;
 use Tests\TestCase;
 
 final class StrictComparatorTest extends TestCase
 {
     public function testReturnsTrueWhenAllRulesAreSatisfied()
     {
-        $ruleChecker = $this->createStub(RuleCheckerInterface::class);
-        $ruleChecker->method('satisfies')->willReturnOnConsecutiveCalls(true, true);
+        $strictComparator = app(StrictComparator::class);
 
-        $strictComparator = app(StrictComparator::class, compact('ruleChecker'));
-
-        $result = $strictComparator->isApplicable($this->stubRuleDto(), $this->stubRuleDto());
+        $result = $strictComparator->isApplicable($this->stubCondition(true), $this->stubCondition(true));
 
         $this->assertTrue($result);
     }
 
     public function testIReturnsFalseWhenAnyRuleIsNotSatisfied()
     {
-        $ruleChecker = $this->createStub(RuleCheckerInterface::class);
-        $ruleChecker->method('satisfies')->willReturnOnConsecutiveCalls(true, false);
+        $strictComparator = app(StrictComparator::class);
 
-        $strictComparator = app(StrictComparator::class, compact('ruleChecker'));
-
-        $result = $strictComparator->isApplicable($this->stubRuleDto(), $this->stubRuleDto());
+        $result = $strictComparator->isApplicable($this->stubCondition(false), $this->stubCondition(true));
 
         $this->assertFalse($result);
     }
 
     public function testReturnsTrueWhenNoRulesAreProvided()
     {
-        $ruleChecker = $this->createStub(RuleCheckerInterface::class);
-
-        $strictComparator = app(StrictComparator::class, compact('ruleChecker'));
+        $strictComparator = app(StrictComparator::class);
 
         $result = $strictComparator->isApplicable();
 
         $this->assertTrue($result);
     }
 
-    private function stubRuleDto(): RuleDto
+    private function stubCondition(bool $isSatisfied = true): ConditionInterface
     {
-        $rule = $this->createStub(RuleInterface::class);
-        $valueProvider = $this->createStub(CanProvideExaminedValue::class);
+        $condition = $this->createStub(ConditionInterface::class);
+        $condition->method('isSatisfied')->willReturn($isSatisfied);
 
-        return app(RuleDto::class, compact('rule', 'valueProvider'));
+        return $condition;
     }
 }
