@@ -7,10 +7,11 @@ namespace Tests\Feature\Rules;
 use App\Domain\Models\{ConditionValue, Link, RedirectLink};
 use App\Domain\Models\Rules\Rule;
 use App\Infrastructure\Http\Middleware\AuthenticateService;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Tests\Factories\UserFactory;
 use Tests\TestCase;
 
-final class LanguageRuleTest extends TestCase
+final class TimeIntervalRuleTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -21,9 +22,8 @@ final class LanguageRuleTest extends TestCase
 
     public function testRuleSuccess(): void
     {
-        $expected = 'en';
-
-        $_SERVER['HTTP_ACCEPT_LANGUAGE'] = $expected;
+        $gt = now()->addDays(-1);
+        $lt = now()->addDays(1);
 
         $link = Link::factory()
             ->has(RedirectLink::factory())
@@ -33,12 +33,19 @@ final class LanguageRuleTest extends TestCase
 
         Rule::factory()
             ->for($redirectLink)
-            ->has(Rule::factory()
-                ->state(['rule_type' => 'EqualCondition'])
-                ->has(ConditionValue::factory()
-                    ->state(['value' => $expected]), 'value'), 'conditions')
+            ->has(Rule::factory(2)
+                ->state(new Sequence(
+                    ['rule_type' => 'LtCondition'],
+                    ['rule_type' => 'GtCondition'],
+                ))
+                ->has(ConditionValue::factory(2)
+                    ->state(fn(array $attributes, Rule $rule) =>
+                    ['value' => match ($rule->rule_type) {
+                        'LtCondition' => $lt,
+                        'GtCondition' => $gt,
+                    }]), 'value'), 'conditions')
             ->create([
-                'rule_type' => 'LanguageRule',
+                'rule_type' => 'TimeIntervalRule',
             ]);
 
         $this->actingAs(UserFactory::make())
@@ -48,7 +55,7 @@ final class LanguageRuleTest extends TestCase
 
     public function testRuleFail(): void
     {
-        $_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'en';
+        $gte = now()->addDays(1);
 
         $link = Link::factory()
             ->has(RedirectLink::factory())
@@ -59,11 +66,13 @@ final class LanguageRuleTest extends TestCase
         Rule::factory()
             ->for($redirectLink)
             ->has(Rule::factory()
-                ->state(['rule_type' => 'EqualCondition'])
+                ->state(['rule_type' => 'GteCondition'])
                 ->has(ConditionValue::factory()
-                    ->state(['value' => 'fr']), 'value'), 'conditions')
+                    ->state(
+                        ['value' => now()->addDays(1)]
+                    ), 'value'), 'conditions')
             ->create([
-                'rule_type' => 'LanguageRule',
+                'rule_type' => 'TimeIntervalRule',
             ]);
 
         $this->actingAs(UserFactory::make())

@@ -12,7 +12,7 @@ use App\Domain\Models\Conditions\{
     LteCondition,
     OrCondition
 };
-use App\Domain\Models\Rules\LanguageRule;
+use App\Domain\Models\Rules\{LanguageRule, TimeIntervalRule};
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -33,6 +33,7 @@ class RuleServiceProvider extends ServiceProvider
         $this->bindRuleInterfaces();
         $this->bindConditionInterface();
         $this->bindLanguageRule();
+        $this->bindTimeIntervalRule();
         $this->bindConditions();
     }
 
@@ -53,12 +54,22 @@ class RuleServiceProvider extends ServiceProvider
 
     private function bindLanguageRule(): void
     {
-        $this->app->bind('LanguageRule.getValue', static fn(): string => $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '');
         $this->app->bind(
             'LanguageRule.isSatisfied',
             fn(Application $app, array $args) => static fn(): bool => $app->make(
                 LanguageRule::class,
                 ['rule' => app(HasConditionsInterfaceAdapter::class, ['adaptee' => $args[0], 'value' => LanguageRule::provideValue()])]
+            )->isSatisfied()
+        );
+    }
+
+    private function bindTimeIntervalRule(): void
+    {
+        $this->app->bind(
+            'TimeIntervalRule.isSatisfied',
+            fn(Application $app, array $args) => static fn(): bool => $app->make(
+                TimeIntervalRule::class,
+                ['rule' => app(HasConditionsInterfaceAdapter::class, ['adaptee' => $args[0], 'value' => TimeIntervalRule::provideValue()])]
             )->isSatisfied()
         );
     }
