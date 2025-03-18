@@ -4,11 +4,19 @@ declare(strict_types=1);
 
 namespace App\Domain\Models\Conditions;
 
+use App\Domain\Interfaces\CanProvideValueInterface;
 use Webmozart\Assert\Assert;
 
 final class EqualCondition extends AbstractCondition
 {
-    public function isValid(mixed $value, mixed $expect): bool
+    public function __construct(private readonly CanProvideValueInterface $condition, private readonly mixed $value) {}
+
+    public function isSatisfied(): bool
+    {
+        return $this->isValid($this->value, $this->condition->getValue());
+    }
+
+    protected function isValid(mixed $value, mixed $expect): bool
     {
         return $this->assertIsValid(
             fn(mixed $value, mixed $expect) => Assert::eq($value, $expect),

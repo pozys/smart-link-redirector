@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Interfaces;
 
-interface RedirectLinkInterface
+interface HasConditionsInterface
 {
-    public function getLink(): string;
-
     /**
      * @return ConditionInterface[]
      */
-    public function getRules(): array;
+    public function conditions(): array;
 }

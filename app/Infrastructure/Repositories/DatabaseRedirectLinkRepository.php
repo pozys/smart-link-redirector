@@ -7,10 +7,10 @@ namespace App\Infrastructure\Repositories;
 use App\Application\Interfaces\RedirectLinkRepositoryInterface;
 use App\Domain\Interfaces\LinkInterface;
 
-final class RemoteRedirectLinkRepository implements RedirectLinkRepositoryInterface
+final class DatabaseRedirectLinkRepository implements RedirectLinkRepositoryInterface
 {
     public function findRedirects(LinkInterface $link): array
     {
-        return [];
+        return $link->redirectLinks->all();
     }
 }

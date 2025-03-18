@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domain\Models\Conditions;
 
-use App\Domain\Interfaces\{RuleInterface, ValueWrapperInterface};
-use App\Domain\Models\ValueWrappers\{
-    BooleanValueWrapper,
-    DateTimeValueWrapper,
-    FloatValueWrapper,
-    IntegerValueWrapper,
-    StringValueWrapper
-};
+use App\Domain\Interfaces\CanProvideValueInterface;
+use App\Domain\Models\Conditions\GtCondition;
+use Carbon\Carbon;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -20,51 +15,45 @@ final class GtConditionTest extends TestCase
     public static function rightData(): array
     {
         return [
-            'string' => [app(StringValueWrapper::class, ['value' => 'foo']), 'bar'],
-            'integer' => [app(IntegerValueWrapper::class, ['value' => '4']), '1'],
-            'float' => [app(FloatValueWrapper::class, ['value' => '1.2']), '1.1'],
-            'bool' => [app(BooleanValueWrapper::class, ['value' => 'true']), 'false'],
-            'date' => [app(DateTimeValueWrapper::class, ['value' => '2022-02-01']), '2022-01-01'],
+            'string' => ['foo', 'bar'],
+            'integer' => [2, 1],
+            'float' => [1.2, 1.1],
+            'bool' => [true, false],
+            'date' => [Carbon::parse('2022-01-02'), Carbon::parse('2022-01-01')],
         ];
     }
 
     public static function wrongData(): array
     {
         return [
-            'string-equal' => [app(StringValueWrapper::class, ['value' => 'foo']), 'foo'],
-            'string-greater' => [app(StringValueWrapper::class, ['value' => 'bar']), 'foo'],
-            'integer-equal' => [app(IntegerValueWrapper::class, ['value' => '1']), '1'],
-            'integer-greater' => [app(IntegerValueWrapper::class, ['value' => '1']), '2'],
-            'float-equal' => [app(FloatValueWrapper::class, ['value' => '1.1']), '1.1'],
-            'float-greater' => [app(FloatValueWrapper::class, ['value' => '1.1']), '1.2'],
-            'bool-equal' => [app(BooleanValueWrapper::class, ['value' => 'true']), 'true'],
-            'bool-greater' => [app(BooleanValueWrapper::class, ['value' => 'false']), 'true'],
-            'date-equal' => [app(DateTimeValueWrapper::class, ['value' => '2022-01-01']), '2022-01-01'],
-            'date-greater' => [app(DateTimeValueWrapper::class, ['value' => '2022-01-01']), '2022-02-01'],
+            'string-equal' => ['foo', 'foo'],
+            'string-greater' => ['bar', 'foo'],
+            'integer-equal' => [1, 1],
+            'integer-greater' => [1, 2],
+            'float-equal' => [1.1, 1.1],
+            'float-greater' => [1.1, 1.2],
+            'bool-equal' => [true, true],
+            'bool-greater' => [false, true],
+            'date-equal' => [Carbon::parse('2022-01-01'), Carbon::parse('2022-01-01')],
+            'date-greater' => [Carbon::parse('2022-01-01'), Carbon::parse('2022-01-02')],
         ];
     }
 
     #[DataProvider('rightData')]
-    public function testIsSatisfied(ValueWrapperInterface $actual, string $limit): void
+    public function testIsSatisfied(mixed $value, mixed $limit): void
     {
-        $condition = app('GtCondition.isSatisfiedBy', [$this->wrapIntoRuleInerface($limit)]);
+        $condition = $this->createStub(CanProvideValueInterface::class);
+        $condition->method('getValue')->willReturn($limit);
 
-        $this->assertTrue($condition($actual));
+        $this->assertTrue(app(GtCondition::class, compact('condition', 'value'))->isSatisfied());
     }
 
     #[DataProvider('wrongData')]
-    public function testIsNotSatisfied(ValueWrapperInterface $actual, string $limit): void
+    public function testIsNotSatisfied(mixed $value, mixed $limit): void
     {
-        $condition = app('GtCondition.isSatisfiedBy', [$this->wrapIntoRuleInerface($limit)]);
+        $condition = $this->createStub(CanProvideValueInterface::class);
+        $condition->method('getValue')->willReturn($limit);
 
-        $this->assertFalse($condition($actual));
-    }
-
-    private function wrapIntoRuleInerface(mixed $value): RuleInterface
-    {
-        $stub = $this->createStub(RuleInterface::class);
-        $stub->method('value')->willReturn($value);
-
-        return $stub;
+        $this->assertFalse(app(GtCondition::class, compact('condition', 'value'))->isSatisfied());
     }
 }

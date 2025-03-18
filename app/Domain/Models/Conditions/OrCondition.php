@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace App\Domain\Models\Conditions;
 
-use App\Domain\Interfaces\{RuleInterface, ValueWrapperInterface};
+use App\Domain\Interfaces\{ConditionInterface, HasConditionsInterface};
 
 final class OrCondition
 {
-    public function isValid(ValueWrapperInterface $value, RuleInterface ...$conditions): bool
+    public function __construct(
+        private readonly HasConditionsInterface $condition,
+        private readonly mixed $examinedValue
+    ) {}
+
+    public function isSatisfied(): bool
     {
-        return collect($conditions)->contains(fn(RuleInterface $condition): bool => $condition->isSatisfiedBy($value));
+        return collect($this->condition->conditions())
+            ->contains(fn(ConditionInterface $condition): bool => $condition->isSatisfied());
     }
 }

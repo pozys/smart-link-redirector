@@ -8,9 +8,9 @@ use Closure;
 
 abstract class AbstractCondition
 {
-    abstract public function isValid(mixed $value, mixed $expected): bool;
+    abstract public function isSatisfied(): bool;
 
-    public function assertIsValid(Closure $assertion, mixed ...$values): bool
+    protected function assertIsValid(Closure $assertion, mixed ...$values): bool
     {
         try {
             call_user_func($assertion, ...$values);

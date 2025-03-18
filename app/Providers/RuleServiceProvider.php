@@ -2,8 +2,7 @@
 
 namespace App\Providers;
 
-use App\Application\Adapters\RuleInterfaceAdapter;
-use App\Domain\Interfaces\ValueWrapperInterface;
+use App\Application\Adapters\{CanProvideValueAdapter, HasConditionsInterfaceAdapter};
 use App\Domain\Models\Conditions\{
     AndCondition,
     EqualCondition,
@@ -13,120 +12,80 @@ use App\Domain\Models\Conditions\{
     LteCondition,
     OrCondition
 };
-use App\Domain\Models\Rules\Rule;
-use App\Domain\Models\ValueWrappers\StringValueWrapper;
+use App\Domain\Models\Rules\LanguageRule;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 class RuleServiceProvider extends ServiceProvider
 {
+    private array $conditionBindings = [
+        'Equal' => EqualCondition::class,
+        'Gt' => GtCondition::class,
+        'Lt' => LtCondition::class,
+        'Gte' => GteCondition::class,
+        'Lte' => LteCondition::class,
+        'Or' => OrCondition::class,
+        'And' => AndCondition::class,
+    ];
+
     public function register(): void
     {
-        $this->app->bind(
-            'RuleInterface.isSatisfiedBy',
-            fn(Application $app, array $args) => static fn(
-                ValueWrapperInterface $value
-            ): bool => $app->make($args[0]->rule_type . '.isSatisfiedBy', [$app->make(RuleInterfaceAdapter::class, ['adaptee' => $args[0]])])($value)
-        );
+        $this->bindRuleInterfaces();
+        $this->bindConditionInterface();
+        $this->bindLanguageRule();
+        $this->bindConditions();
+    }
 
-        $this->app->bind(
-            'RuleInterface.ruleType',
-            static fn(Application $app, array $args): string => $args[0]->rule_type
-        );
+    private function bindRuleInterfaces(): void
+    {
+        $this->app->bind('RuleInterface.ruleType', static fn(Application $app, array $args): string => $args[0]->rule_type);
+        $this->app->bind('RuleInterface.value', static fn(Application $app, array $args): mixed => $args[0]->value->value);
+        $this->app->bind('RuleInterface.conditions', static fn(Application $app, array $args): array => $args[0]->conditions->all());
+    }
 
+    private function bindConditionInterface(): void
+    {
         $this->app->bind(
-            'RuleInterface.value',
-            static fn(Application $app, array $args): mixed => $args[0]->value->value
+            'ConditionInterface.isSatisfied',
+            fn(Application $app, $args) => static fn(): bool => $app->make($args[0]->rule_type . '.isSatisfied', $args)()
         );
+    }
 
-        $this->app->bind(
-            'RuleInterface.conditions',
-            static fn(Application $app, array $args): array => $args[0]->conditions->all()
-        );
-
-        $this->app->bind(
-            'CanProvideExaminedValue.getCurrentValue',
-            fn(
-                Application $app,
-                array $args
-            ): ValueWrapperInterface => $app->make(
-                $args[0]->rule_type . '.getCurrentValue',
-                $args
-            )
-        );
-
+    private function bindLanguageRule(): void
+    {
         $this->app->bind('LanguageRule.getValue', static fn(): string => $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '');
-
         $this->app->bind(
-            'LanguageRule.getCurrentValue',
-            static fn(Application $app, array $args): ValueWrapperInterface => $app->make(
-                StringValueWrapper::class,
-                ['value' => $app->make($args[0]->rule_type . '.getValue')]
-            )
+            'LanguageRule.isSatisfied',
+            fn(Application $app, array $args) => static fn(): bool => $app->make(
+                LanguageRule::class,
+                ['rule' => app(HasConditionsInterfaceAdapter::class, ['adaptee' => $args[0], 'value' => LanguageRule::provideValue()])]
+            )->isSatisfied()
         );
+    }
 
-        $this->app->bind(
-            'LanguageRule.isSatisfiedBy',
-            fn(Application $app, array $args)
-            => static fn(ValueWrapperInterface $value): bool => collect($args[0]->conditions())
-                ->every(
-                    fn(Rule $condition): bool => $app->make('RuleInterface.isSatisfiedBy', [$condition])($value)
-                )
-        );
+    private function bindConditions(): void
+    {
+        foreach ($this->conditionBindings as $conditionName => $conditionClass) {
+            $this->bindCondition($conditionName, $conditionClass);
+        }
+    }
 
+    private function bindCondition(string $conditionName, string $conditionClass): void
+    {
         $this->app->bind(
-            'EqualCondition.isSatisfiedBy',
-            fn(Application $app, array $args) => static fn(
-                ValueWrapperInterface $valueWrapper
-            ): bool => $app->make(EqualCondition::class)
-                ->isValid($valueWrapper->getValue(), $valueWrapper->cast($args[0]->value()))
+            $conditionName . 'Condition.isSatisfied',
+            fn(Application $app, array $args) => fn(): bool => $app->make(
+                $conditionClass,
+                $this->getConditionParameters($conditionName, $args)
+            )->isSatisfied()
         );
+    }
 
-        $this->app->bind(
-            'GteCondition.isSatisfiedBy',
-            fn(Application $app, array $args) => static fn(
-                ValueWrapperInterface $valueWrapper
-            ): bool => $app->make(GteCondition::class)
-                ->isValid($valueWrapper->getValue(), $valueWrapper->cast($args[0]->value()))
-        );
-
-        $this->app->bind(
-            'GtCondition.isSatisfiedBy',
-            fn(Application $app, array $args) => static fn(
-                ValueWrapperInterface $valueWrapper
-            ): bool => $app->make(GtCondition::class)
-                ->isValid($valueWrapper->getValue(), $valueWrapper->cast($args[0]->value()))
-        );
-
-        $this->app->bind(
-            'LteCondition.isSatisfiedBy',
-            fn(Application $app, array $args) => static fn(
-                ValueWrapperInterface $valueWrapper
-            ): bool => $app->make(LteCondition::class)
-                ->isValid($valueWrapper->getValue(), $valueWrapper->cast($args[0]->value()))
-        );
-
-        $this->app->bind(
-            'LtCondition.isSatisfiedBy',
-            fn(Application $app, array $args) => static fn(
-                ValueWrapperInterface $valueWrapper
-            ): bool => $app->make(LtCondition::class)
-                ->isValid($valueWrapper->getValue(), $valueWrapper->cast($args[0]->value()))
-        );
-
-        $this->app->bind(
-            'AndCondition.isSatisfiedBy',
-            fn(Application $app, array $args) => static fn(
-                ValueWrapperInterface $valueWrapper
-            ): bool => $app->make(AndCondition::class)->isValid($valueWrapper, ...$args)
-        );
-
-        $this->app->bind(
-            'OrCondition.isSatisfiedBy',
-            fn(Application $app, array $args) => static fn(
-                ValueWrapperInterface $valueWrapper
-            ): bool => $app->make(OrCondition::class)->isValid($valueWrapper, ...$args)
-        );
+    private function getConditionParameters(string $conditionName, array $args): array
+    {
+        return in_array($conditionName, ['Or', 'And'])
+            ? ['rule' => app(HasConditionsInterfaceAdapter::class, ['adaptee' => $args[0]]), 'value' => $args[1]]
+            : ['condition' => $this->app->make(CanProvideValueAdapter::class, ['adaptee' => $args[0]]), 'value' => $args[1]];
     }
 
     public function boot(): void
