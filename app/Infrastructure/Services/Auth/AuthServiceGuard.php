@@ -45,34 +45,8 @@ final class AuthServiceGuard implements Guard
         return $this->user;
     }
 
-    public function check(): bool
-    {
-        return !is_null($this->user());
-    }
-
-    public function guest(): bool
-    {
-        return !$this->check();
-    }
-
-    public function id(): int|string|null
-    {
-        if ($this->user()) {
-            return $this->user()->getAuthIdentifier();
-        }
-
-        return null;
-    }
-
     public function validate(array $credentials = []): bool
     {
         return false;
-    }
-
-    public function setUser(Authenticatable $user): self
-    {
-        $this->user = $user;
-
-        return $this;
     }
 }
