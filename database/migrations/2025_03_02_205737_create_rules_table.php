@@ -1,6 +1,5 @@
 <?php
 
-use App\Domain\Models\RedirectLink;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,10 +14,6 @@ return new class extends Migration
             $table->id();
             $table->text('rule_type');
             $table->morphs('owned');
-            // $table->foreignIdFor(RedirectLink::class)
-            //     ->nullable()
-            //     ->onUpdate('cascade')
-            //     ->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });
